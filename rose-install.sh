@@ -28,6 +28,7 @@ function display_help()
 Usage: rose-install.sh [-b <boost-path>] [-g <git-repo-name>] [-u]
   -b boost-path: Boost install top-level directory
   -g git-repo-name: Git repository name (legal names are: rose, edg4x-rose)
+  -t: Use the tgz source package
   -u: Unattended mode
 EOF
 }
@@ -38,12 +39,15 @@ TOP_DIR=$(pwd)
 BOOST=/usr
 UNATTENDED=0 # set to 0 to process each step interactively
 ###################################
-GIT_REPO=""
-while getopts ":r:p:b:g:u:h" opt; do
+# Use the rose git repository by default
+GIT_REPO="rose"
+while getopts ":b:g:uht" opt; do
     case $opt in
 		g)
-			# Git repository specified
 			GIT_REPO=$OPTARG
+			;;
+		t)
+			GIT_REPO=""
 			;;
 		b)
 			BOOST=$OPTARG
@@ -367,7 +371,7 @@ function clean_up_old_files()
 			;;
     esac
 
-    
+    typed_command=""
     if [ $UNATTENDED -ne 1 ]; then
 		echo "Commands"
 		echo "1: download"
