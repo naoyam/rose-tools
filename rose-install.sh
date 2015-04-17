@@ -41,7 +41,8 @@ UNATTENDED=0 # set to 0 to process each step interactively
 ###################################
 # Use the rose git repository by default
 GIT_REPO="rose"
-while getopts ":b:g:uht" opt; do
+COMMAND=""
+while getopts ":b:g:c:uht" opt; do
     case $opt in
 		g)
 			GIT_REPO=$OPTARG
@@ -54,6 +55,9 @@ while getopts ":b:g:uht" opt; do
 			;;
 		u)
 			UNATTENDED=1
+			;;
+		c)
+			COMMAND=$OPTARG
 			;;
 		h)
 			display_help
@@ -269,7 +273,7 @@ function exec_configure()
 	mkdir $build_dir
 	cd $build_dir
     #local CONFIGURE_COMMAND="$(get_src_dir)/configure --prefix=$install_prefix --with-CXX_DEBUG=-g --with-CXX_WARNINGS='-Wall -Wno-deprecated' --with-boost=$BOOST --with-boost-libdir=$BOOSTLIB --enable-languages=c,c++,fortran,cuda,opencl"
-	local CONFIGURE_COMMAND="$(get_src_dir)/configure --prefix=$install_prefix --with-CXX_DEBUG=-g --with-boost=$BOOST --with-boost-libdir=$BOOSTLIB"
+	local CONFIGURE_COMMAND="$(get_src_dir)/configure --prefix=$install_prefix --with-CXX_DEBUG=-g --with-boost=$BOOST --with-boost-libdir=$BOOSTLIB" 
 	echo "Executing configure as: $CONFIGURE_COMMAND..."
     if [ $UNATTENDED -ne 1 ]; then
 		echo -n "Type Enter to proceed: "
@@ -370,9 +374,7 @@ function clean_up_old_files()
 			export DYLD_LIBRARY_PATH=${JAVA_LIBRARIES}:${BOOST}/lib:$DYLD_LIBRARY_PATH
 			;;
     esac
-
-    typed_command=""
-    if [ $UNATTENDED -ne 1 ]; then
+    if [ -z "$COMMAND" -a $UNATTENDED -ne 1 ]; then
 		echo "Commands"
 		echo "1: download"
 		echo "2: configure"
@@ -381,14 +383,12 @@ function clean_up_old_files()
 		echo "5: clean up"		
 		echo "6: do all"
 		echo -n "What to do? [1-6] (default: 6): "
-		read typed_command
+		read COMMAND
     fi
-	if [ -z "$typed_command" ]; then
-		command=6
-	else
-		command=$typed_command
+	if [ -z "$COMMAND" ]; then
+		COMMAND=6
 	fi
-    case $command in
+    case $COMMAND in
 		1)
 			download
 			;;
@@ -412,7 +412,7 @@ function clean_up_old_files()
             clean_up_old_files
 			;;
 		*)
-			echo Invalid input \"$command\"
+			echo Invalid input \"$COMMAND\"
 			;;
     esac
 
